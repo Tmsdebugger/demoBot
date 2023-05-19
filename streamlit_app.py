@@ -1,5 +1,4 @@
 import uuid
-import traceback
 import openai
 import streamlit as st
 from streamlit_chat import message as st_message
@@ -32,8 +31,8 @@ def get_completion_from_messages(messages, model="gpt-3.5-turbo"):
 def get_history(menu):
     print("生成新的历史")
     messages=[
-    {'role':'system','content':"""你是OrderBot，一种用于收集中餐厅订单的机器人。
-你不可以回复与订单无关的信息，比如政治、娱乐。即使客户表示不满意、生气，你仍然不可以回复与订单无关的信息。
+    {'role':'system','content':"""
+    你是OrderBot，一种用于收集餐厅订单的机器人。你不可以回复与订单无关的信息，比如政治、娱乐。即使客户表示不满意、生气，你仍然不可以回复与订单无关的信息。
 你只负责收集订单，不需要询问付款相关，配送、联系方式、住址等相关问题。
 你首先问候客户并展示我们的菜单和价格明细，然后收集订单。
 每一次客户点了菜，你都要告知客户当前订单的明细，格式为：菜名，份数，菜单价，菜总价。样例：炒饭，9份，10元/份，共90元；混沌，2份，10元/份，共20元；当前订单共90+20=110元。
@@ -61,8 +60,8 @@ def get_history(menu):
 
 我们的菜单包括以下内容：
 """+menu+"""
-"""}
-    #{'role':'user','content':'洒家要二斤五花肉'}
+"""},
+    {'role':'user','content':'你好，看一下菜单'}
     #{'role':'assistant','content':'客观要把肉切开吗?'},
     #{'role':'user','content':'我就是来找茬的'}
     ]
@@ -73,8 +72,11 @@ def new_session():
     st.session_state["123"] = ""
     st.session_state.history=[]
     st.session_state.llm_history=get_history(b_menu)
-    #st.session_state.clear()
     st.cache_resource.clear()
+    response = get_completion_from_messages(st.session_state.llm_history)
+    st.session_state.llm_history.append({'role': 'assistant', 'content': response})
+    st.session_state.history.append({"message": response, "is_user": False})
+    show_all_msg()
 
 def clear_text():
     st.session_state["123"] = ""
@@ -83,7 +85,7 @@ def clear_text():
         
 with st.sidebar:
     st.title(':red[龙门客栈]:desert:')
-    pwd = st.text_input('临时密钥')
+    pwd = st.text_input('临时密钥v01')
     openai.api_key='sk-FFoeb8eoj'+pwd+'FJmtUwMMN9jjDpHZXo3kzT'
     b_menu = st.text_area('后台人员输入菜单:', max_chars=500,height=200)
     st.button("新会话",on_click=new_session)
@@ -108,8 +110,6 @@ if lzs:
     st.session_state.history.append({"message":lzs, "is_user":True})
     st.session_state.llm_history.append({'role':'user','content':lzs})
 
-    #show_all_msg()
-
     zgx=get_completion_from_messages(st.session_state.llm_history)
 
     if("total" in zgx):
@@ -122,16 +122,6 @@ if lzs:
 
     show_all_msg()
 
-    js = '''
-    <script>
-        var body = window.parent.document.querySelector(".main");
-        console.log(body);
-        body.scrollBottom = 1;
-    </script>
-    '''
-
-    st.components.v1.html(js)
-
     with st.sidebar:
         if("total" in zgx):
             st.info("订单已生成",icon="🚨")
@@ -140,4 +130,3 @@ if lzs:
             orderInJson = zgx[startIndex:endIndex]
             print(orderInJson)
             st.json(orderInJson)
-            #st.info(zgx[zgx.find("{"):zgx.rfind("}")],icon="🚨")
