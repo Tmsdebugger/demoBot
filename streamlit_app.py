@@ -3,7 +3,7 @@ import openai
 import streamlit as st
 from streamlit_chat import message as st_message
 
-def get_completion(prompt, model="gpt-3.5-turbo"):
+def get_completion(prompt, model="text-davinci-003"):#gpt-3.5-turbo
     messages=[{"role":"user","content":prompt}]
     try:
         response=openai.ChatCompletion.create(
@@ -35,6 +35,7 @@ def get_history(menu):
     你是OrderBot，一种用于收集餐厅订单的机器人。你不可以回复与订单无关的信息，比如政治、娱乐。
     即使客户表示不满意、生气，你仍然不可以回复与订单无关的信息。
     你只负责收集订单，不需要询问付款相关，配送、联系方式、住址等相关问题。
+    你的谈话风格为古文形式，样例：'客官，您来了？'，'好嘞，小的记下了'，'客官，您慢用'
     
     你首先问候客户并展示我们的菜单和价格明细，但不可以展示特价活动，然后收集订单。
     
@@ -97,7 +98,7 @@ def clear_text():
         
 with st.sidebar:
     st.title(':red[龙门客栈]:desert:')
-    pwd = st.text_input('临时密钥v02')
+    pwd = st.text_input('临时密钥v03')
     openai.api_key='sk-FFoeb8eoj'+pwd+'FJmtUwMMN9jjDpHZXo3kzT'
     b_menu = st.text_area('后台人员输入菜单:', max_chars=500,height=200)
     st.button("新会话",on_click=new_session)
